@@ -1,8 +1,6 @@
 let gold = 0;
 let minerCount = 0;
-let minerCost = 10;
 let minerProduction = 1;
-
 let clickPower = 1;
 let clickUpgradeCount = 0;
 let clickUpgradeCost = 25;
@@ -94,7 +92,22 @@ const upgrades = {
         { name: 'Temporal Resonance Extractor', baseCost: 500000000000000, power: 25000000000, owned: 0, type: 'Gold/Click' },
         { name: 'Multiverse Impact Amplifier', baseCost: 1000000000000000, power: 50000000000, owned: 0, type: 'Gold/Click' },
         { name: 'Quantum Consciousness Forge', baseCost: 2500000000000000, power: 100000000000, owned: 0, type: 'Gold/Click' },
-        { name: 'Omniversal Click Resonator', baseCost: 5000000000000000, power: 250000000000, owned: 0, type: 'Gold/Click' }
+        { name: 'Omniversal Click Resonator', baseCost: 5000000000000000, power: 250000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Quantum Probability Matrix Enhancer', baseCost: 250000000000000, power: 500000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Temporal Flux Stabilization Protocol', baseCost: 10000000000000, power: 1000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Multidimensional Impact Resonator', baseCost: 250000000000, power: 2500000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Dark Energy Manipulation Tool', baseCost: 500000000000, power: 5000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Cosmic String Vibration Amplifier', baseCost: 1000000000000, power: 10000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Quantum Probability Manipulator', baseCost: 2500000000000, power: 25000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Reality Distortion Hammer', baseCost: 5000000000000, power: 50000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Quantum Tunneling Chisel', baseCost: 10000000000000, power: 100000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Cosmic Resonance Pickaxe', baseCost: 25000000000000, power: 250000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Hyperdimensional Impact Tool', baseCost: 50000000000000, power: 500000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Quantum Entanglement Splitter', baseCost: 100000000000000, power: 1000000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Temporal Resonance Extractor', baseCost: 250000000000000, power: 2500000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Multiverse Impact Amplifier', baseCost: 500000000000000, power: 5000000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Quantum Consciousness Forge', baseCost: 1000000000000000, power: 10000000000000, owned: 0, type: 'Gold/Click' },
+        { name: 'Omniversal Click Resonator', baseCost: 2500000000000000, power: 25000000000000, owned: 0, type: 'Gold/Click' }
     ],
     goldMultipliers: [
         { name: 'Local Gold Rush', baseCost: 50, multiplier: 1.5, owned: 0, type: 'Multiplier' },
@@ -322,7 +335,100 @@ document.addEventListener('DOMContentLoaded', () => {
         goldCoin.addEventListener('click', clickGold);
     }
     
-    updateDisplay();
+    // Try to load saved game, if no save exists, start a new game
+    if (!loadGame()) {
+        updateDisplay();
+    }
 });
 
 setInterval(autoProduction, 1000);
+
+function saveGame() {
+    const gameState = {
+        gold: gold,
+        minerCount: minerCount,
+        minerProduction: minerProduction,
+        clickPower: clickPower,
+        goldRushMultiplier: goldRushMultiplier,
+        upgrades: {}
+    };
+
+    // Save all upgrade categories
+    for (let category in upgrades) {
+        gameState.upgrades[category] = upgrades[category].map(upgrade => ({
+            name: upgrade.name,
+            baseCost: upgrade.baseCost,
+            owned: upgrade.owned
+        }));
+    }
+
+    try {
+        localStorage.setItem('goldClickerSave', JSON.stringify(gameState));
+        console.log('Game saved successfully');
+    } catch (error) {
+        console.error('Error saving game:', error);
+    }
+}
+
+function loadGame() {
+    try {
+        const savedGame = localStorage.getItem('goldClickerSave');
+        if (savedGame) {
+            const gameState = JSON.parse(savedGame);
+
+            // Restore basic game state
+            gold = gameState.gold || 0;
+            minerCount = gameState.minerCount || 0;
+            minerProduction = gameState.minerProduction || 0;
+            clickPower = gameState.clickPower || 1;
+            goldRushMultiplier = gameState.goldRushMultiplier || 1;
+
+            // Restore upgrades
+            for (let category in upgrades) {
+                if (gameState.upgrades && gameState.upgrades[category]) {
+                    gameState.upgrades[category].forEach((savedUpgrade, index) => {
+                        if (upgrades[category][index]) {
+                            upgrades[category][index].owned = savedUpgrade.owned || 0;
+                            upgrades[category][index].baseCost = savedUpgrade.baseCost || upgrades[category][index].baseCost;
+                        }
+                    });
+                }
+            }
+
+            updateDisplay();
+            console.log('Game loaded successfully');
+            return true;
+        }
+    } catch (error) {
+        console.error('Error loading game:', error);
+    }
+    return false;
+}
+
+function resetGame() {
+    localStorage.removeItem('goldClickerSave');
+    
+    // Reset all game variables to initial state
+    gold = 0;
+    minerCount = 0;
+    minerProduction = 1;
+    clickPower = 1;
+    goldRushMultiplier = 1;
+
+    // Reset all upgrades
+    for (let category in upgrades) {
+        upgrades[category].forEach(upgrade => {
+            upgrade.owned = 0;
+            upgrade.baseCost = upgrade.baseCost; // Reset to original base cost
+        });
+    }
+
+    updateDisplay();
+    console.log('Game reset');
+}
+
+function autoSave() {
+    saveGame();
+}
+
+setInterval(autoSave, 30000);
